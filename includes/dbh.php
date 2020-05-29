@@ -1,13 +1,13 @@
 <?php
 
 
-$servername = "db-biztweak.cwa2ohztrnrz.eu-west-1.rds.amazonaws.com";
+$servername = "";
 
 $dBUsername = "root";
 
-$dBPassword = "tweakbizcoza";
+$dBPassword = "";
 
-$dBName = "testing";
+$dBName = "";
 
 
 
