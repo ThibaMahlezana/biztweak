@@ -2,7 +2,7 @@
 <?php
   require 'dbh.php';
   session_start();
-  // array_push($infoStuff, 'testing dashboard'."<br>"."<br>";
+
   $infoStuff = array();
   $capture = array();
   echo "<br>"."<br>";
@@ -1952,6 +1952,45 @@
             </section>
             '
           ;
+          $usergraphings = 
+            '<div class="container">
+              <div class="row">
+                  <div class="col-sm-6 col-md-4">
+                      <div class="card cart-block">
+                        <div id="concept_piechart" style="width: 400px; height: 200px;"></div>
+                      </div>
+                  </div>
+                  <div class="col-sm-6 col-md-4">
+                      <div class="card cart-block">
+                        <div id="overall_piechart" style="width: 450px; height: 250px;"></div>
+                      </div>
+                  </div>
+                  <div class="col-sm-6 col-md-4">
+                      <div class="card cart-block">
+                        <div id="structure_piechart" style="width: 400px; height: 200px;"></div>
+                      </div>
+                  </div>
+              </div>
+              </div>
+            </div>
+            
+            <div class="container">
+              <div class="row">
+                  <div class="col-sm-6 col-md-4">
+                      <div class="card cart-block">
+                        <div id="structure_columnchart" style="width: 600px; height: 300px;"></div>
+                      </div>
+                  </div>
+                  <div class="col-sm-6 col-md-4">
+                      <div class="card cart-block">
+                        <div id="concept_columnchart" style="width: 600px; height: 300px;"></div>
+                      </div>
+                  </div>
+              
+              </div>
+            </div>
+            '
+          ;
 
           if(empty($consKey) || $consKey=="" || strlen($consKey)==0){
             foreach ($consult_ui_key_quest as $line) {
@@ -1962,7 +2001,7 @@
           $url = '';
           $url.= $_SERVER['REQUEST_URI'];    
             
-          if (strpos($url, "=") !== false){
+          if (strpos($url, "view") !== false){
             $where = explode("=", $url);
             if ($where[1] == "totalconsult") {
               echo 
@@ -1988,9 +2027,11 @@
                                             <h4 class="card-title mbr-fonts-style display-5">
                                                 '.$userC.'
                                             </h4>
-                                            <p class="mbr-text cost mbr-fonts-style m-0 display-5">
-                                                View Report
-                                            </p>
+                                            <a href="dashboard.php?consultUser='.$userC.'">
+                                              <p class="mbr-text cost mbr-fonts-style m-0 display-5">
+                                                  View Report
+                                              </p>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -2024,9 +2065,11 @@
                                           <h4 class="card-title mbr-fonts-style display-5">
                                               '.$userI.'
                                           </h4>
-                                          <p class="mbr-text cost mbr-fonts-style m-0 display-5">
-                                              View Report
-                                          </p>
+                                          <a href="dashboard.php?consultUser='.$userI.'">
+                                            <p class="mbr-text cost mbr-fonts-style m-0 display-5">
+                                                View Report
+                                            </p>
+                                          </a>
                                       </div>
                                   </div>
                               </div>
@@ -2037,7 +2080,7 @@
                 }
               }
 
-            } else if($where[1] == "completeconsult"){
+            } else if ($where[1] == "completeconsult"){
               echo 
               '
               <div class="container">
@@ -2061,9 +2104,11 @@
                                           <h4 class="card-title mbr-fonts-style display-5">
                                               '.$userP.'
                                           </h4>
-                                          <p class="mbr-text cost mbr-fonts-style m-0 display-5">
-                                              View Report
-                                          </p>
+                                          <a href="dashboard.php?consultUser='.$userP.'">
+                                            <p class="mbr-text cost mbr-fonts-style m-0 display-5">
+                                                View Report
+                                            </p>
+                                          </a>
                                       </div>
                                   </div>
                               </div>
@@ -2074,6 +2119,662 @@
                 }
               }
             }
+          } else if (strpos($url, 'consultUser') !== false) {
+            require 'dbh.php';
+            $viewUsers = explode("=", $url);
+            $viewUser = $viewUsers[1];
+            echo $viewUser."<br>";
+            $sql = "SELECT * FROM bizInfo WHERE sdatauid='$viewUser'";
+            $result = $conn->query($sql);
+            if ($result->num_rows > 0) {
+              while($row = $result->fetch_assoc()) {
+                $bizStage = $row["sdataq6"];
+              }
+            }
+            echo $bizStage."<br>";
+            if ($bizStage == 'Idea/Concept' || $bizStage == 'Start Up (Pre-revenue)'){
+              
+              //Structure Section
+                //Talent
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_talent= 0;
+                    $cols = ['sdataq9', 'sdataq10', 'sdataq11', 'sdataq12', 'sdataq13', 'sdataq14'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_talent += 3;
+                        }
+                      }
+                    }
+                    $talent_av = 3 * count($cols);
+                  }
+                //Legal
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_legal= 0;
+                    $cols = ['sdataq15', 'sdataq16', 'sdataq17', 'sdataq18', 'sdataq19', 'sdataq20', 'sdataq21', 'sdataq22', 'sdataq23', 'sdataq24', 'sdataq25', 'sdataq26', 'sdataq27', 'sdataq28', 'sdataq29', 'sdataq30', 'sdataq31', 'sdataq32', 'sdataq33', 'sdataq34', 'sdataq35', 'sdataq36', 'sdataq37', 'sdataq38', 'sdataq39', 'sdataq40', 'sdataq41', 'sdataq42', 'sdataq44', 'sdataq45', 'sdataq46'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_legal += 2;
+                        }
+                      }
+                    }
+                    $legal_av = 2 * count($cols);
+                  }
+                //Service Offering Capability
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_soc= 0;
+                    $cols = ['sdataq47', 'sdataq48', 'sdataq49', 'sdataq50', 'sdataq51', 'sdataq52', 'sdataq53', 'sdataq54', 'sdataq55', 'sdataq56', 'sdataq57', 'sdataq58', 'sdataq59', 'sdataq60'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_soc += 2;
+                        }
+                      }
+                    }
+                    $soc_av = 2 * count($cols);
+                  }
+                //Organisation
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_org= 0;
+                    $cols = ['sdataq61', 'sdataq62', 'sdataq63', 'sdataq64', 'sdataq65', 'sdataq66', 'sdataq67', 'sdataq68', 'sdataq69', 'sdataq70'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_org += 1;
+                        }
+                      }
+                    }
+                    $org_av = 1 * count($cols);
+                  }
+                //Strategy
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_strategy= 0;
+                    $cols = ['sdataq71', 'sdataq72', 'sdataq73', 'sdataq74', 'sdataq75', 'sdataq76'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_strategy += 3;
+                        }
+                      }
+                    }
+                    $strategy_av = 3 * count($cols);
+                  }
+                //Financial Management
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_finman= 0;
+                    $cols = ['sdataq77', 'sdataq78', 'sdataq79', 'sdataq80', 'sdataq81'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_finman += 1;
+                        }
+                      }
+                    }
+                    $finman_av = 1 * count($cols);
+                  }
+        
+              $structure_total = $total_talent + $total_legal + $total_soc + $total_org + $total_strategy + $total_finman;
+              $structure_score = round($structure_total/142*100, 2);
+              //Concept Section
+                //Vprop
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_vprop= 0;
+                    $cols = ['sdataq82', 'sdataq83', 'sdataq84', 'sdataq85', 'sdataq86'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_vprop += 3;
+                        }
+                      }
+                    }
+                    $vprop_av = 3 * count($cols);
+                  }
+                //CS
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_cs= 0;
+                    $cols = ['sdataq87', 'sdataq88', 'sdataq89', 'sdataq90', 'sdataq91', 'sdataq92', 'sdataq93', 'sdataq94' ];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_cs += 3;
+                        }
+                      }
+                    }
+                    $cs_av = 3 * count($cols);
+                  }
+                //Cha
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_cha= 0;
+                    $cols = ['sdataq95', 'sdataq96', 'sdataq97', 'sdataq98'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_cha += 1;
+                        }
+                      }
+                    }
+                    $cha_av = 1 * count($cols);
+                  }
+                //CusRel
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_cusrel= 0;
+                    $cols = ['sdataq99', 'sdataq100', 'sdataq101', 'sdataq102'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_cusrel += 1;
+                        }
+                      }
+                    }
+                    $cusrel_av = 1 * count($cols);
+                  }
+                //RevStr
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_revstr= 0;
+                    $cols = ['sdataq103', 'sdataq104', 'sdataq105', 'sdataq106'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_revstr += 1;
+                        }
+                      }
+                    }
+                    $revstr_av = 1 * count($cols);
+                  }
+                //KeyAct
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_keyact= 0;
+                    $cols = ['sdataq107'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_keyact += 1;
+                        }
+                      }
+                    }
+                    $keyact_av = 1 * count($cols);
+                  }
+                //KeyRes
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_keyres= 0;
+                    $cols = ['sdataq108'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_keyres += 1;
+                        }
+                      }
+                    }
+                    $keyres_av = 1 * count($cols);
+                  }
+                //KeyPart
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_keypart= 0;
+                    $cols = ['sdataq109', 'sdataq110'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_keypart += 1;
+                        }
+                      }
+                    }
+                    $keypart_av = 1 * count($cols);
+                  }
+                //CostStr
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_coststr= 0;
+                    $cols = ['sdataq111', 'sdataq112', 'sdataq113', 'sdataq114'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_coststr += 1;
+                        }
+                      }
+                    }
+                    $coststr_av = 1 * count($cols);
+                  }
+                //CurrAlt
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_curralt= 0;
+                    $cols = ['sdataq115', 'sdataq116'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_curralt += 1;
+                        }
+                      }
+                    }
+                    $curralt_av = 1 * count($cols);
+                  }
+                //Sol
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_sol= 0;
+                    $cols = ['sdataq117'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_sol += 2;
+                        }
+                      }
+                    }
+                    $sol_av = 2 * count($cols);
+                  }
+                //UnfAd
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_unfad= 0;
+                    $cols = ['sdataq118'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_unfad += 2;
+                        }
+                      }
+                    }
+                    $unfad_av = 2 * count($cols);
+                  }
+        
+              $concept_total = $total_vprop + $total_cs + $total_cha + $total_cusrel + $total_revstr + $total_keyact + $total_keyres + $total_keypart + $total_coststr + $total_curralt + $total_sol + $total_unfad; 
+              $concept_score = round($concept_total/66*100, 2);
+
+            } else {
+              echo $bizStage."<br>";
+              //Structure Section
+                //Talent
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_talent= 0;
+                    $cols = ['sdataq9', 'sdataq10', 'sdataq11', 'sdataq12', 'sdataq13', 'sdataq14'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_talent += 3;
+                        }
+                      }
+                    }
+                    $talent_av = 3 * count($cols);
+                  }
+                //Legal
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_legal= 0;
+                    $cols = ['sdataq15', 'sdataq16', 'sdataq17', 'sdataq18', 'sdataq19', 'sdataq20', 'sdataq21', 'sdataq22', 'sdataq23', 'sdataq24', 'sdataq25', 'sdataq26', 'sdataq27', 'sdataq28', 'sdataq29', 'sdataq30', 'sdataq31', 'sdataq32', 'sdataq33', 'sdataq34', 'sdataq35', 'sdataq36', 'sdataq37', 'sdataq38', 'sdataq39', 'sdataq40', 'sdataq41', 'sdataq42', 'sdataq44', 'sdataq45', 'sdataq46'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_legal += 1;
+                        }
+                      }
+                    }
+                    $legal_av = 1 * count($cols);
+                  }
+                //Service Offering Capability
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_soc= 0;
+                    $cols = ['sdataq47', 'sdataq48', 'sdataq49', 'sdataq50', 'sdataq51', 'sdataq52', 'sdataq53', 'sdataq54', 'sdataq55', 'sdataq56', 'sdataq57', 'sdataq58', 'sdataq59', 'sdataq60'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_soc += 1;
+                        }
+                      }
+                    }
+                    $soc_av = 1 * count($cols);
+                  }
+                //Organisation
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_org= 0;
+                    $cols = ['sdataq61', 'sdataq62', 'sdataq63', 'sdataq64', 'sdataq65', 'sdataq66', 'sdataq67', 'sdataq68', 'sdataq69', 'sdataq70'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_org += 3;
+                        }
+                      }
+                    }
+                    $org_av = 3 * count($cols);
+                  }
+                //Strategy
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_strategy= 0;
+                    $cols = ['sdataq71', 'sdataq72', 'sdataq73', 'sdataq74', 'sdataq75', 'sdataq76'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_strategy += 2;
+                        }
+                      }
+                    }
+                    $strategy_av = 2 * count($cols);
+                  }
+                //Financial Management
+                  $sql = "SELECT * FROM bizStructure WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_finman= 0;
+                    $cols = ['sdataq77', 'sdataq78', 'sdataq79', 'sdataq80', 'sdataq81'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_finman += 2;
+                        }
+                      }
+                    }
+                    $finman_av = 2 * count($cols);
+                  }
+              
+              $structure_total = $total_talent + $total_legal + $total_soc + $total_org + $total_strategy + $total_finman;
+              $structure_score = round($structure_total/129*100, 2);
+              //Concept Section
+                //Vprop
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_vprop= 0;
+                    $cols = ['sdataq82', 'sdataq83', 'sdataq84', 'sdataq85', 'sdataq86'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_vprop += 3;
+                        }
+                      }
+                      array_push($infoStuff, "Value Proposition Score: ".$total_vprop."<br>");
+                    }
+                    $vprop_av = 3 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Value Proposition"."<br>");
+                  }
+                //CS
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_cs= 0;
+                    $cols = ['sdataq87', 'sdataq88', 'sdataq89', 'sdataq90', 'sdataq91', 'sdataq92', 'sdataq93', 'sdataq94' ];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_cs += 3;
+                        }
+                      }
+                      array_push($infoStuff, "Customer Segment Score: ".$total_cs."<br>");
+                    }
+                    $cs_av = 3 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Customer Segment"."<br>");
+                  }
+                //Cha
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_cha= 0;
+                    $cols = ['sdataq95', 'sdataq96', 'sdataq97', 'sdataq98'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_cha += 2;
+                        }
+                      }
+                      array_push($infoStuff, "Channels Score: ".$total_cha."<br>");
+                    }
+                    $cha_av = 2 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Channels"."<br>");
+                  }
+                //CusRel
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_cusrel= 0;
+                    $cols = ['sdataq99', 'sdataq100', 'sdataq101', 'sdataq102'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_cusrel += 1;
+                        }
+                      }
+                      array_push($infoStuff, "Customer relationships Score: ".$total_cusrel."<br>");
+                    }
+                    $cusrel_av = 1 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Customer relationships"."<br>");
+                  }
+                //RevStr
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_revstr= 0;
+                    $cols = ['sdataq103', 'sdataq104', 'sdataq105', 'sdataq106'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_revstr += 1;
+                        }
+                      }
+                      array_push($infoStuff, "Revenue streams Score: ".$total_revstr."<br>");
+                    }
+                    $revstr_av = 1 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Revenue streams"."<br>");
+                  }
+                //KeyAct
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_keyact= 0;
+                    $cols = ['sdataq107'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_keyact += 2;
+                        }
+                      }
+                      array_push($infoStuff, "Key activities Score: ".$total_keyact."<br>");
+                    }
+                    $keyact_av = 2 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Key activities"."<br>");
+                  }
+                //KeyRes
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_keyres= 0;
+                    $cols = ['sdataq108'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_keyres += 1;
+                        }
+                      }
+                      array_push($infoStuff, "Key Resources Score: ".$total_keyres."<br>");
+                    }
+                    $keyres_av = 1 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Key Resources"."<br>");
+                  }
+                //KeyPart
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_keypart= 0;
+                    $cols = ['sdataq109', 'sdataq110'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_keypart += 1;
+                        }
+                      }
+                      array_push($infoStuff, "Key partners Score: ".$total_keypart."<br>");
+                    }
+                    $keypart_av = 1 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Key partners"."<br>");
+                  }
+                //CostStr
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_coststr= 0;
+                    $cols = ['sdataq111', 'sdataq112', 'sdataq113', 'sdataq114'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_coststr += 1;
+                        }
+                      }
+                      array_push($infoStuff, "Cost structure Score: ".$total_coststr."<br>");
+                    }
+                    $coststr_av = 1 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Cost structure"."<br>");
+                  }
+                //CurrAlt
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_curralt= 0;
+                    $cols = ['sdataq115', 'sdataq116'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_curralt += 1;
+                        }
+                      }
+                      array_push($infoStuff, "Current alternatives Score: ".$total_curralt."<br>");
+                    }
+                    $curralt_av = 1 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Current alternatives"."<br>");
+                  }
+                //Sol
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_sol= 0;
+                    $cols = ['sdataq117'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_sol += 1;
+                        }
+                      }
+                      array_push($infoStuff, "Solution Score: ".$total_sol."<br>");
+                    }
+                    $sol_av = 1 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Solution"."<br>");
+                  }
+                //UnfAd
+                  $sql = "SELECT * FROM bizConcept WHERE sdatauid='$viewUser'";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    $total_unfad= 0;
+                    $cols = ['sdataq118'];
+                    while($row = $result->fetch_assoc()) {
+                      foreach($cols as $col){
+                        if ($row[$col] == 'True'){
+                          $total_unfad += 1;
+                        }
+                      }
+                      array_push($infoStuff, "Unfair Advantage Score: ".$total_unfad."<br>");
+                    }
+                    $unfad_av = 1 * count($cols);
+                  } else {
+                    array_push($infoStuff, "No information found under Biz Concept - Unfair Advantage"."<br>");
+                  }
+        
+              $concept_total = $total_vprop + $total_cs + $total_cha + $total_cusrel + $total_revstr + $total_keyact + $total_keyres + $total_keypart + $total_coststr + $total_curralt + $total_sol + $total_unfad;
+              $concept_score = round($concept_total/69*100, 2);
+            }
+            
+        
+            $str_list = array (
+              array("talent", $total_talent/$talent_av*100),
+              array("legal", $total_legal/$legal_av*100),
+              array("service offering cabability", $total_soc/$soc_av*100),
+              array("organisation", $total_org/$org_av*100),
+              array("strategy", $total_strategy/$strategy_av*100),
+              array("financial management", $total_finman/$finman_av*100)
+            );
+        
+            $con_list = array (
+              array("Value Proposition", $total_vprop/$vprop_av*100),
+              array("Customer Segment", $total_cs/$cs_av*100),
+              array("Channels", $total_cha/$cha_av*100),
+              array("Customer relationships", $total_cusrel/$cusrel_av*100),
+        
+              array("Revenue streams", $total_revstr/$revstr_av*100),
+              array("Key activities", $total_keyact/$keyact_av*100),
+              array("Key Resources", $total_keyres/$keyres_av*100),
+              array("Key partners", $total_keypart/$keypart_av*100),
+        
+              array("Cost structure", $total_coststr/$coststr_av*100),
+              array("Current alternatives", $total_curralt/$curralt_av*100),
+              array("Solution", $total_sol/$sol_av*100),
+              array("Unfair Advantage", $total_unfad/$unfad_av*100)
+            );
+            
+            $str_tot_list = array (
+              array("total", $structure_score),
+              array("area to improve", 100-$structure_score)
+            );
+        
+            $con_tot_list = array (
+              array("total", $concept_score),
+              array("area to improve", 100-$concept_score)
+            );
+        
+            $overall_list = array (
+              array("total", ($concept_score + $structure_score)/2),
+              array("area to improve", 100-(($concept_score + $structure_score)/2))
+            );
+
+            echo $usergraphings;
+
           } else {
             echo $consult_ui;
             echo $consultantgraphing;
@@ -2169,6 +2870,8 @@
           }
           echo $graphings;
         }
+        $conn->close();
+
       ?>
     </main>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
